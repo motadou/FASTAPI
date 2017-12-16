@@ -156,10 +156,9 @@ Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int nLen)
     return 0 ;
 }
 
-IFast_Message* FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::Decode (const char* lpData, int nLen)
+IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, int nLen)
 {
-  this->m_bHasError = false ;
+    this->m_bHasError = false ;
   // 判断消息的合法性-头部
   if (strncmp (lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
     {
@@ -333,12 +332,15 @@ Fast_Decoder_Impl::Decode (const char* lpData, int nLen)
       lpFastMsg->Release () ;
       return 0 ;
     }
-  if (-1 == this->DecodeFast (lpFastData, nFastDataLen, lpFastMsg, lpFastTempl))
+    
+    if (-1 == this->DecodeFast (lpFastData, nFastDataLen, lpFastMsg, lpFastTempl))
     {
-      lpFastMsg->Release () ;
-			return 0 ;
+        lpFastMsg->Release () ;
+        
+        return 0 ;
     }
-  return lpFastMsg ;
+    
+    return lpFastMsg ;
 }
 
 
@@ -616,31 +618,27 @@ Fast_Decoder_Impl::LoadFieldTempl (TiXmlElement *pXmlElement)
   return lpTemplField ;
 }
 
-int 
-Fast_Decoder_Impl::DecodeFastRecord (const char* lpFastData, 
-                                   int nDataLen, 
-                                   Fast_Record_Impl* lpRecord,
-                                   FastMsg_Templ* lpMsgTempl)
+int Fast_Decoder_Impl::DecodeFastRecord(const char* lpFastData, int nDataLen, Fast_Record_Impl* lpRecord, FastMsg_Templ* lpMsgTempl)
 {
-  size_t curr_size  = 0 ;
-  size_t ret_size   = 0 ;
+    size_t curr_size  = 0;
+    size_t ret_size   = 0;
 
-  //解析PMAP
-  PMAP pmap ;
-  memset(pmap, 0, sizeof(PMAP)) ;
-  ret_size = DecodePMAP (lpFastData, FAST_PMAPSIZE, pmap) ;
-  if (ret_size == 0)
+    //解析PMAP
+    PMAP pmap ;
+    memset(pmap, 0, sizeof(PMAP)) ;
+    ret_size = DecodePMAP (lpFastData, FAST_PMAPSIZE, pmap) ;
+    if (ret_size == 0)
     {
-      this->m_bHasError = true ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Decode FastData Error: PMAP Excp.") ;
-      return -1 ;
-     }
-  curr_size += ret_size ;
-  //解析消息类型
-  uint32  fast_msgtype = 0 ;
-  ret_size = DecodeFastType (lpFastData + curr_size, fast_msgtype) ;
-  if (ret_size == 0)
+        this->m_bHasError = true ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Decode FastData Error: PMAP Excp.") ;
+        return -1 ;
+    }
+    curr_size += ret_size;
+
+    //解析消息类型
+    uint32  fast_msgtype = 0 ;
+    ret_size = DecodeFastType (lpFastData + curr_size, fast_msgtype) ;
+    if (ret_size == 0)
     {
       this->m_bHasError = true ;
       ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
@@ -1022,9 +1020,7 @@ size_t
 	return curr_size ;
 }
 
-
-int 
-Fast_Decoder_Impl::SetFastValRecord (Fast_Record_Impl* lpRecord, uint32& nID, const Fast_Value& fast_val)
+int Fast_Decoder_Impl::SetFastValRecord (Fast_Record_Impl* lpRecord, uint32& nID, const Fast_Value& fast_val)
 {
   switch( fast_val.field_type )
   {
@@ -1074,12 +1070,12 @@ Fast_Decoder_Impl::DecodePMAP (const char* lpData, size_t nDataLen, PMAP pmap)
   return size ;
 }
 
-size_t 
-Fast_Decoder_Impl::DecodeFastType (const char* lpData, uint32& nMsgType)
+size_t Fast_Decoder_Impl::DecodeFastType (const char* lpData, uint32& nMsgType)
 {
   Fast_Value fast_value ;
+  
   ///2014-02-18 tangmc 增加市场判断
-  if (emFAST_SHLEVEL2 ==m_makettype)
+  if (emFAST_SHLEVEL2 == m_makettype)
   {
 	  fast_value.field_type = FFT_Int32 ;
   }
