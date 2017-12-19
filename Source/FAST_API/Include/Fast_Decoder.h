@@ -288,20 +288,20 @@ public:
    */
   virtual const FastField_Info* FUNCTION_CALL_MODE GetFieldInfo (int nTagID) = 0 ;
 
-  /***
-   *@method GetLastError
-   *@func   获取最后的错误信息
-   *@return
-   *     0: no error.
-   * other: error info.
-   */
-  virtual const char* FUNCTION_CALL_MODE GetLastError () = 0 ;
+    /***
+     *@method GetLastError
+     *@func   获取最后的错误信息
+     *@return
+     *     0: no error.
+     * other: error info.
+     */
+    virtual const char* FUNCTION_CALL_MODE GetLastError () = 0 ;
 
-  /***
-   *@method Release
-   *@func   释放解析器.
-   */
-  virtual void FUNCTION_CALL_MODE Release () = 0 ;
+    /***
+     *@method Release
+     *@func   释放解析器.
+     */
+    virtual void FUNCTION_CALL_MODE Release () = 0 ;
 } ;
 
 #endif

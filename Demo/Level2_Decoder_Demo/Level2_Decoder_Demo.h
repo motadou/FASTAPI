@@ -77,13 +77,20 @@ public:
 	};
 public:
 	Level2_Decoder_Demo(FAST_TYPE ft,char * lpFile);
-	~Level2_Decoder_Demo();
-	int Init();
-	int ConnectServer(int port,char *ip);
-	void Start();
-	void Push(L2_Data_Tag &buff);
-	L2_Data_Tag * Pop();
-	int GetOneFastMessage (FastMsgInfo& refMsgInfo) ;
+	
+    ~Level2_Decoder_Demo();
+	
+    int Init();
+	
+    int ConnectServer(int port,char *ip);
+	
+    void Start();
+	
+    void Push(L2_Data_Tag &buff);
+	
+    L2_Data_Tag * Pop();
+	
+    int GetOneFastMessage (FastMsgInfo& refMsgInfo) ;
 
 #ifdef _WIN32
 	static DWORD WINAPI Deal(void* lpParamter);
@@ -102,12 +109,14 @@ public:
 	@逐笔成交
 	****************************************************/
 	void Deal_SH_NGTSTransaction(IFast_Record *Record);
-	/***************************************************
+	
+    /***************************************************
 	@处理上海level2  数据        (实现，当作DEMO)
 	@行情快照
 	****************************************************/
 	void Deal_SH_NGTSMarketData(IFast_Record *Record);
-	/***************************************************
+	
+    /***************************************************
 	@处理上海level2  数据        (实现，当作DEMO)
 	@指数行情消息
 	****************************************************/
@@ -118,13 +127,12 @@ public:
 	@市场概况消息
 	****************************************************/
 	void Deal_SH_NGTSMarketOverview(IFast_Record *Record);
-	/***************************************************
+	
+    /***************************************************
 	@处理上海level2  数据        
 	@虚拟竞拍
 	****************************************************/
 	void Deal_SH_NGTSVirtualAuctionPrice(IFast_Record *Record);
-	
-
 
 	/***************************************************
 	@处理深圳level2  FAST数据       

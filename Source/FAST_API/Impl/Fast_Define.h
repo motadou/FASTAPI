@@ -342,27 +342,28 @@ typedef map<uint32, FastMsg_Templ *> FastTempl_Map ;
 class FastTempl_Manager
 {
 protected:
-  FastTempl_Map                m_mapTempl ;
+    FastTempl_Map m_mapTempl ;
 
 public:
-  ~FastTempl_Manager()
-  {
-    this->Clear () ;
-  }
+    ~FastTempl_Manager()
+    {
+        this->Clear () ;
+    }
 
-  FastMsg_Templ *GetTemplate(uint32 nTemplID)
-  {
-    FastTempl_Map::iterator iter = m_mapTempl.find (nTemplID) ;
-    if( iter!= m_mapTempl.end() )
-      return iter->second ;
-    else
-      return 0 ;
-  }
+    FastMsg_Templ *GetTemplate(uint32 nTemplID)
+    {
+        FastTempl_Map::iterator iter = m_mapTempl.find(nTemplID) ;
+        
+        if( iter!= m_mapTempl.end() )
+            return iter->second ;
+        else
+            return 0 ;
+    }
 
-  int  AddTempl(uint32 nTemplID, FastMsg_Templ *lpFastTempl)
-  {
-    std::pair<FastTempl_Map::iterator, bool> ret = m_mapTempl.insert(FastTempl_Map::value_type(nTemplID, lpFastTempl)) ;
-    if( ret.second )
+    int  AddTempl(uint32 nTemplID, FastMsg_Templ *lpFastTempl)
+    {
+        std::pair<FastTempl_Map::iterator, bool> ret = m_mapTempl.insert(FastTempl_Map::value_type(nTemplID, lpFastTempl)) ;
+        if( ret.second )
       return  0  ;
     else
       return  -1 ;

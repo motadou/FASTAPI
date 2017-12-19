@@ -42,16 +42,20 @@
 #endif
 
 #include "Level2_Decoder_Demo.h"
+
 class Level2_Decoder_Demo;
 class L2_Receiver
 {
 public:
 	L2_Receiver(Level2_Decoder_Demo *owner);
-	~L2_Receiver();
+	
+    ~L2_Receiver();
 	int Start();
 	int Connect(int port=0,char *ip="");
+
 protected:
 	int Init();
+
 private:
 	struct sockaddr_in sin;
 	int inet_sock;
@@ -60,6 +64,5 @@ private:
 	char *m_ip;
 	Level2_Decoder_Demo *m_owner;
 };
-
 
 #endif

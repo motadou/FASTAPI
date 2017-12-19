@@ -29,12 +29,7 @@ IFast_Decoder * FUNCTION_CALL_MODE Decoder_Factory_Impl::GetFastDecoder(FAST_TYP
     switch (ft)
     {
         case emFAST_SHLEVEL2 : return new Fast_Decoder_Impl(emFAST_SHLEVEL2) ;
-        case emFAST_SZLEVEL2 :
-            // Set error.
-            /* this->m_bHasError = true ;
-                snprintf (this->m_strError, sizeof(this->m_strError)-1, "Permission denied [FAST-SZL2].") ;
-                return 0 ;*/
-	        return new Fast_Decoder_Impl(emFAST_SZLEVEL2) ;
+        case emFAST_SZLEVEL2 : return new Fast_Decoder_Impl(emFAST_SZLEVEL2) ;
         default:
             // errno
             this->m_bHasError = true ;

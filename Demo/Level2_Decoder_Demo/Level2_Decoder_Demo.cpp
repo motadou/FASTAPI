@@ -10,9 +10,8 @@ m_Recv(NULL),
 {
 	m_ft=ft;
 	m_lpFile=lpFile;
-
-
 }
+
 Level2_Decoder_Demo::~Level2_Decoder_Demo()
 {
 
@@ -33,34 +32,35 @@ typedef void* (* PF_FUNC) () ;
 #endif
 int Level2_Decoder_Demo::Init()
 {
-	IDecoder_Factory* lpFactory = GetDecoderFactoryInstance();
+	IDecoder_Factory * lpFactory = GetDecoderFactoryInstance();
 	//解释工厂
 	//从解释工厂得到解释器
-	m_Decoder = lpFactory->GetFastDecoder (m_ft) ; 
+	m_Decoder = lpFactory->GetFastDecoder(m_ft) ; 
 	if (!m_Decoder)
 	{
 		return -1;
 	}
 
-	m_Recv=new(std::nothrow) L2_Receiver(this);
+	m_Recv = new(std::nothrow) L2_Receiver(this);
 	if (!m_Recv)
 	{
 		return -1;
 	}
-	m_lock=new Lock();
 
-	
+    m_lock = new Lock();
+
 	//加载模板
 	return m_Decoder->LoadTemplate(m_lpFile);
 }
+
 int Level2_Decoder_Demo::ConnectServer(int port,char *ip)
 {
-	if(m_Recv->Connect(port,ip)!=0)
+	if (m_Recv->Connect(port,ip)!=0)
 	{
 		return -1;
 	}
-	return 0;
 	
+    return 0;
 }
 
 #ifdef _WIN32
@@ -83,7 +83,8 @@ void* Level2_Decoder_Demo::Deal(void* lpParamter)
 #endif
 			continue;
 		}
-		if (L2Decoder->m_ft==emFAST_SHLEVEL2)
+
+		if (L2Decoder->m_ft == emFAST_SHLEVEL2)
 		{
 			L2Decoder->Deal_SH_Level2_Data(buff->buff,buff->lenth);
 		}
@@ -98,9 +99,7 @@ void* Level2_Decoder_Demo::Deal(void* lpParamter)
 #ifdef _WIN32
 	return 0;
 #endif
-	
 }
-
 
 void Level2_Decoder_Demo::Start()
 {
@@ -110,15 +109,19 @@ void Level2_Decoder_Demo::Start()
 	m_Recv->Start();
 #else
 	int i,ret;
-	ret=pthread_create(&hThread,NULL,Deal,this);
-	if(ret!=0){
+	ret = pthread_create(&hThread, NULL, Deal, this);
+	if(ret!=0)
+    {
 		printf ("Create thread error!\n");
 		exit (1);
 	}
-	m_Recv->Start();
-	pthread_join(hThread,NULL);
+
+    m_Recv->Start();
+
+    pthread_join(hThread, NULL);
 #endif
 }
+
 void Level2_Decoder_Demo::Push(L2_Data_Tag &buff)
 {
 	AutoLock aulock(m_lock);
@@ -279,19 +282,20 @@ int Level2_Decoder_Demo::GetFastMsgInfo (const char* lpData, int nLen, FastMsgIn
 void Level2_Decoder_Demo::Deal_SH_Level2_Data(char *buff,int length)
 {
 	//解释FAST数据 得到一个Fast_Message 消息
-	IFast_Message *FastMsg=m_Decoder->Decode(buff,length);
+	IFast_Message *FastMsg = m_Decoder->Decode(buff, length);
 	if (!FastMsg)
 	{
 		printf("出错解释FAST数据\n");
 		printf("%s\n",m_Decoder->GetLastError());
 		return;
 	}
-	const char * strType=FastMsg->GetMsgType();
+	const char * strType = FastMsg->GetMsgType();
 
-	if( strType==0 )
+	if (strType == 0)
 	{
 		FastMsg->Release();
-		return;
+
+        return;
 	}
 	else if (!strcmp (strType, "UA3201"))
 	{
@@ -303,12 +307,13 @@ void Level2_Decoder_Demo::Deal_SH_Level2_Data(char *buff,int length)
 		for (int i=0;i<count;i++)
 		{
 			//得到每一条Record
-			IFast_Record *Recoder=FastMsg->GetRecord(i);
+			IFast_Record *Recoder = FastMsg->GetRecord(i);
 			if (!Recoder)
 			{
 				FastMsg->Release();
 				return;
 			}
+
 			//处理Record
 			Deal_SH_NGTSTransaction(Recoder);
 		}
@@ -392,6 +397,7 @@ void Level2_Decoder_Demo::Deal_SH_Level2_Data(char *buff,int length)
 		}
 		//
 	}
+
 	FastMsg->Release();
 }
 

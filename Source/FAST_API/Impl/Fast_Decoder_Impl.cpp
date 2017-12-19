@@ -56,27 +56,26 @@ Fast_Decoder_Impl::LoadTemplate (const char* lpFile)
   return 0 ;
 }
 
-int FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::LoadTemplateForSZG5HQ (const char* lpFile)
+int FUNCTION_CALL_MODE Fast_Decoder_Impl::LoadTemplateForSZG5HQ (const char* lpFile)
 {
 	this->m_bHasError = false ;
 	this->m_FastTempls.Clear () ;
 	this->m_mapFieldInfo.clear () ;
 	TiXmlDocument *pXmlDoc = new TiXmlDocument() ;
 	Delete_Guard<TiXmlDocument> guard (pXmlDoc) ;
-	if (pXmlDoc == 0)
+	
+    if (pXmlDoc == 0)
 	{
 		this->m_bHasError = true ;
 		::snprintf (this->m_strError, sizeof (this->m_strError)-1,
 			"No memory.") ;
 		return -1 ;
 	}
-	if (!pXmlDoc->LoadFile (lpFile))
+
+    if (!pXmlDoc->LoadFile(lpFile))
 	{
 		this->m_bHasError = true ;
-		::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-			"Load XML-File[%s] Failed, Error[%s].",
-			lpFile, pXmlDoc->Error ()?pXmlDoc->ErrorDesc ():"") ;
+		::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Load XML-File[%s] Failed, Error[%s].", lpFile, pXmlDoc->Error ()?pXmlDoc->ErrorDesc ():"") ;
 		return -1 ;
 	}
 
@@ -94,9 +93,7 @@ Fast_Decoder_Impl::LoadTemplateForSZG5HQ (const char* lpFile)
 	if (!lpTemplates)
 	{
 		this->m_bHasError = true ;
-		::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-			"Load XML-File[%s] Failed,templates.",
-			lpFile) ;
+		::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Load XML-File[%s] Failed,templates.", lpFile) ;
 		return -1 ;
 	}
 
@@ -112,86 +109,82 @@ Fast_Decoder_Impl::LoadTemplateForSZG5HQ (const char* lpFile)
 	return 0 ;
 }
 
-int FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int nLen)
-{
-  this->m_bHasError = false ;
-  if (nLen < MIN_STEP_LEN)
-    return 0 ;
-
-  if (strncmp (lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
-    {
-      this->m_bHasError = true ;
-      char temp [STEP_HEADER_SIZE + 1] ;
-      memcpy (temp, lpData, STEP_HEADER_SIZE) ;
-      temp [STEP_HEADER_SIZE] = 0x00 ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Illegal Fast Data[%s].", temp) ;
-      return -1 ;
-    }
-  const char* lpStepLen = strstr (lpData, STEP_LEN_FLAG) ;
-  if (!lpStepLen)
-    return 0 ;
-  lpStepLen += STEP_LEN_SIZE ;
-
-  char tmp_buf[20] ;
-  int  nPos = 0 ;
-  while ((*lpStepLen) != STEP_FIELD_DELIM)
-    {
-      tmp_buf[nPos] = *lpStepLen ;
-      ++nPos ;
-      ++lpStepLen ;
-
-      if (nPos >= 20)
-        break ;
-    }
-
-  if (nPos < 20)
-    {
-      ++lpStepLen ;
-      tmp_buf[nPos] = '\0' ;
-      return static_cast<int>(atoi(tmp_buf)+(lpStepLen - lpData) + FAST_TAIL_LENGTH)  ;
-    }
-  else
-    return 0 ;
-}
-
-IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, int nLen)
+int FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int nLen)
 {
     this->m_bHasError = false ;
-  // 判断消息的合法性-头部
-  if (strncmp (lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
+    if (nLen < MIN_STEP_LEN)
+        return 0 ;
+
+    if (strncmp (lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
     {
-      this->m_bHasError = true ;
-      char strTmp [STEP_HEADER_SIZE + 1] ;
-      strncpy (strTmp, lpData, STEP_HEADER_SIZE) ;
-      strTmp [STEP_HEADER_SIZE] = 0x00 ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Not a fast message: prefixion[%s] is dismatched.", strTmp) ;
-      return 0 ;
+        this->m_bHasError = true ;
+        char temp [STEP_HEADER_SIZE + 1] ;
+        memcpy (temp, lpData, STEP_HEADER_SIZE) ;
+        temp [STEP_HEADER_SIZE] = 0x00 ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
+                  "Illegal Fast Data[%s].", temp) ;
+        return -1 ;
+    }
+    const char* lpStepLen = strstr (lpData, STEP_LEN_FLAG) ;
+    if (!lpStepLen)
+        return 0 ;
+    lpStepLen += STEP_LEN_SIZE ;
+
+    char tmp_buf[20] ;
+    int  nPos = 0 ;
+    while ((*lpStepLen) != STEP_FIELD_DELIM)
+    {
+        tmp_buf[nPos] = *lpStepLen ;
+        ++nPos ;
+        ++lpStepLen ;
+
+        if (nPos >= 20)
+            break ;
     }
 
-  char strMsgType [21], strSendTime [21] ;
-  int  nSeqNum = -1 ;
+    if (nPos < 20)
+    {
+        ++lpStepLen ;
+        tmp_buf[nPos] = '\0' ;
+        return static_cast<int>(atoi(tmp_buf)+(lpStepLen - lpData) + FAST_TAIL_LENGTH);
+    }
+    else
+        return 0 ;
+}
 
-  // 消息类型
-  std::string lpMsgType = get_step_field_value(lpData,nLen, STEP_TYPE_FLAG) ;
-  if (0==lpMsgType.size())
-  {
-	  this->m_bHasError = true ;
-	  ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-		  "Not a valid fast message: can't find message type[%s].", STEP_TYPE_FLAG) ;
-	  return 0 ;
-  }
-  else
-  {
-	  int nPos = lpMsgType.length()<20?lpMsgType.length():20;
+IFast_Message * FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, int nLen)
+{
+    this->m_bHasError = false ;
+    // 判断消息的合法性-头部
+    if (strncmp (lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
+    {
+        this->m_bHasError = true ;
+        char strTmp [STEP_HEADER_SIZE + 1] ;
+        strncpy (strTmp, lpData, STEP_HEADER_SIZE) ;
+        strTmp [STEP_HEADER_SIZE] = 0x00 ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Not a fast message: prefixion[%s] is dismatched.", strTmp) ;
+        return 0 ;
+    }
 
-	  memset(strMsgType,0,21);
-	  memcpy(strMsgType,lpMsgType.c_str(),nPos);
-	  strMsgType [nPos] = '\0' ;
-	 
-  }
+    char strMsgType [21], strSendTime [21] ;
+    int  nSeqNum = -1 ;
+
+    // 消息类型
+    std::string lpMsgType = get_step_field_value(lpData, nLen, STEP_TYPE_FLAG) ;
+    if (0 == lpMsgType.size())
+    {
+	    this->m_bHasError = true ;
+	    ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Not a valid fast message: can't find message type[%s].", STEP_TYPE_FLAG) ;
+	    return 0 ;
+    }
+    else
+    {
+	    int nPos = lpMsgType.length() < 20?lpMsgType.length():20;
+
+	    memset(strMsgType, 0, 21);
+	    memcpy(strMsgType,lpMsgType.c_str(),nPos);
+	    strMsgType [nPos] = '\0' ;
+    }
 
   // 权限控制  tangmc 20140703 去除功能号的限制
   //if (! (strcmp (strMsgType, "UA1202") == 0 ||         // HeartBeat 
@@ -218,8 +211,8 @@ IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, 
   //  return 0 ;
   //}
 
-  // 发送时间
- std::string lpSendTime = get_step_field_value(lpData,nLen, STEP_SENDTIME_FLAG) ;
+    // 发送时间
+    std::string lpSendTime = get_step_field_value(lpData,nLen, STEP_SENDTIME_FLAG) ;
   if (0 == lpSendTime.size())
   {
 	  this->m_bHasError = true ;
@@ -236,20 +229,20 @@ IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, 
 	  strSendTime [nPos] = '\0' ;
   }
 
-  char tmp_buf [21] ;
-  // 消息序号
+    char tmp_buf [21] ;
+    // 消息序号
 
-  std::string lpSeqNum;
-  if (emFAST_SHLEVEL2 ==m_makettype)
-  {
-	  lpSeqNum= get_step_field_value(lpData,nLen, STEP_MSGSEQID_FLAG) ;
-  }
-  else if (emFAST_SZLEVEL2==m_makettype)
-  {
-	   lpSeqNum= get_step_field_value(lpData,nLen, STEP_SEQUENCE_FLAG) ;
-  }
-  if (0==lpSeqNum.size())
-  {
+    std::string lpSeqNum;
+    if (emFAST_SHLEVEL2 ==m_makettype)
+    {
+	    lpSeqNum= get_step_field_value(lpData,nLen, STEP_MSGSEQID_FLAG) ;
+    }
+    else if (emFAST_SZLEVEL2==m_makettype)
+    {
+	    lpSeqNum= get_step_field_value(lpData,nLen, STEP_SEQUENCE_FLAG) ;
+    }
+    if (0==lpSeqNum.size())
+    {
 	  this->m_bHasError = true ;
 	  ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
 		  "Not a valid fast message: can't find seqnum[%s].", STEP_MSGSEQID_FLAG) ;
@@ -270,15 +263,15 @@ IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, 
   strcpy (lpFastMsg->m_strSendTime, strSendTime) ;
   lpFastMsg->m_nSeqNum     = nSeqNum ;
   
-  int nFastDataLen = 0 ;
-  // FASTDATA Length
-  const char *lpFastLen = strstr(lpData, FASTDATA_LEN_FLAG) ;
-  if (!lpFastLen)
+    int nFastDataLen = 0 ;
+    // FASTDATA Length
+    const char *lpFastLen = strstr(lpData, FASTDATA_LEN_FLAG) ;
+    if (!lpFastLen)
     {
 			return lpFastMsg ;
-		}
+    }
 	else
-		{
+    {
       lpFastLen += FASTDATA_LEN_SIZE ;
 			int  nPos = 0 ;
       while ((*lpFastLen) != STEP_FIELD_DELIM)
@@ -299,17 +292,15 @@ IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, 
         }
 	  }
 
-  const char *lpFastData = strstr (lpFastLen, FASTDATA_FLAG) ;
-  if (!lpFastData)
+    const char *lpFastData = strstr (lpFastLen, FASTDATA_FLAG) ;
+    if (!lpFastData)
     {
-      lpFastMsg->Release () ;
-      this->m_bHasError = true ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Not a valid fast message: fast data can't find[%s], fast len[%d].", 
-                  FASTDATA_FLAG, nFastDataLen) ;
-			return 0 ;
+        lpFastMsg->Release () ;
+        this->m_bHasError = true ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Not a valid fast message: fast data can't find[%s], fast len[%d].", FASTDATA_FLAG, nFastDataLen) ;
+        return 0 ;
     }
-  lpFastData += FASTDATA_SIZE ;
+    lpFastData += FASTDATA_SIZE ;
 
   if (lpFastData + nFastDataLen + FAST_TAIL_LENGTH > lpData + nLen)
     {
@@ -321,13 +312,13 @@ IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, 
 			return 0 ;
     }
 
-  // 解析Fast-Data
-  int nMsgType = atoi (strMsgType + 2) ;
-  FastMsg_Templ* lpFastTempl = this->m_FastTempls.GetTemplate (nMsgType) ;
-  if (!lpFastTempl)
+    // 解析Fast-Data
+    int nMsgType = atoi (strMsgType + 2) ;
+    FastMsg_Templ* lpFastTempl = this->m_FastTempls.GetTemplate(nMsgType) ;
+    if (!lpFastTempl)
     {
 		this->m_bHasError = true ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "FAST type[%s:%d] template not found.",
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "FAST type[%s:%d] template not found.",
                   strMsgType, nMsgType) ;
       lpFastMsg->Release () ;
       return 0 ;
@@ -719,34 +710,27 @@ int Fast_Decoder_Impl::DecodeFastRecord(const char* lpFastData, int nDataLen, Fa
   return curr_size ;
 }
 
-int 
-Fast_Decoder_Impl::DecodeFast (const char* lpData, 
-                             int nLen, 
-                             Fast_Message_Impl* lpFastMsg,
-                             FastMsg_Templ* lpMsgTempl)
+int Fast_Decoder_Impl::DecodeFast(const char* lpData, int nLen, Fast_Message_Impl* lpFastMsg, FastMsg_Templ* lpMsgTempl)
 {
-  int nCurr = 0 ;
-  while (nCurr < nLen)
-  {
-    Fast_Record_Impl* lpRecord = lpFastMsg->AddRecord () ;
+    int nCurr = 0 ;
+    while (nCurr < nLen)
+    {
+        Fast_Record_Impl* lpRecord = lpFastMsg->AddRecord();
 
-    int nOffset = this->DecodeFastRecord (lpData + nCurr,
-                                          nLen - nCurr,
-                                          lpRecord,
-                                          lpMsgTempl) ;
-    if (nOffset <= 0)
-      return -1 ;
-    nCurr += nOffset ;
-  } ;
+        int nOffset = this->DecodeFastRecord (lpData + nCurr, nLen - nCurr, lpRecord, lpMsgTempl) ;
+        if (nOffset <= 0)
+        return -1 ;
+        nCurr += nOffset ;
+    }
 
-  //2014-02-19 增加深圳值的释放
-  if (emFAST_SZLEVEL2==m_makettype)
-  {
-	  lpMsgTempl->ResetCurrentValue();
-  }
-   //2014-02-19 增加深圳值的释放
+    //2014-02-19 增加深圳值的释放
+    if (emFAST_SZLEVEL2==m_makettype)
+    {
+	    lpMsgTempl->ResetCurrentValue();
+    }
+    //2014-02-19 增加深圳值的释放
 
-  return 0 ;
+    return 0 ;
 }
 
 

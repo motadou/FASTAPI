@@ -35,47 +35,41 @@
 class Fast_Decoder_Impl : public IFast_Decoder
 {
 public:
-  Fast_Decoder_Impl (FAST_TYPE makettype) ;
+    Fast_Decoder_Impl (FAST_TYPE makettype) ;
 
-  virtual int FUNCTION_CALL_MODE LoadTemplate (const char* lpFile) ;
+    virtual int FUNCTION_CALL_MODE LoadTemplate (const char* lpFile) ;
 
-  virtual int FUNCTION_CALL_MODE LoadTemplateForSZG5HQ (const char* lpFile);
+    virtual int FUNCTION_CALL_MODE LoadTemplateForSZG5HQ (const char* lpFile);
 
-  virtual int FUNCTION_CALL_MODE GetFastMsgLen (const char* lpData, int nLen) ;
+    virtual int FUNCTION_CALL_MODE GetFastMsgLen (const char* lpData, int nLen) ;
 
-  virtual IFast_Message* FUNCTION_CALL_MODE Decode (const char* lpData, int nLen) ;
+    virtual IFast_Message* FUNCTION_CALL_MODE Decode (const char* lpData, int nLen) ;
 
-  virtual IFast_Message* FUNCTION_CALL_MODE DecodeFastData (const char* lpFastData, int nFastDataLen,int nMsgType);
+    virtual IFast_Message* FUNCTION_CALL_MODE DecodeFastData (const char* lpFastData, int nFastDataLen,int nMsgType);
 
-  virtual IFast_Message* FUNCTION_CALL_MODE DecodeFastData (const char* lpFastData, int nFastDataLen);
+    virtual IFast_Message* FUNCTION_CALL_MODE DecodeFastData (const char* lpFastData, int nFastDataLen);
 
-  virtual const FastField_Info* FUNCTION_CALL_MODE GetFieldInfo (int nTagID) ;
+    virtual const FastField_Info* FUNCTION_CALL_MODE GetFieldInfo (int nTagID) ;
 
-  virtual const char* FUNCTION_CALL_MODE GetLastError () ;
+    virtual const char* FUNCTION_CALL_MODE GetLastError () ;
 
-  virtual void FUNCTION_CALL_MODE Release () ;
+    virtual void FUNCTION_CALL_MODE Release () ;
 
 protected:
-  FastTempl_Manager                 m_FastTempls ;
-  std::map<int, Fast_TemplField *>  m_mapFieldInfo ;
+    FastTempl_Manager                 m_FastTempls ;
+    std::map<int, Fast_TemplField *>  m_mapFieldInfo ;
 
-  char                              m_strError [256] ;
-  bool                              m_bHasError ;
-  FAST_TYPE m_makettype;
+    char                              m_strError [256] ;
+    bool                              m_bHasError ;
+    FAST_TYPE m_makettype;
 
-  virtual FastMsg_Templ* LoadTemplate (TiXmlElement *pXmlElement) ;
+    virtual FastMsg_Templ* LoadTemplate (TiXmlElement *pXmlElement) ;
 
-  virtual Fast_TemplField* LoadFieldTempl (TiXmlElement *pXmlElement) ;
+    virtual Fast_TemplField* LoadFieldTempl (TiXmlElement *pXmlElement) ;
 
-  // 解析FAST-Data
-  virtual int DecodeFast (const char* lpData, 
-                          int nLen, 
-                          Fast_Message_Impl* lpFastMsg,
-                          FastMsg_Templ* lpMsgTempl) ;
-  virtual int DecodeFastRecord (const char* lpData, 
-                                int nLen, 
-                                Fast_Record_Impl* lpRecord,
-                                FastMsg_Templ* lpMsgTempl) ;
+    // 解析FAST-Data
+    virtual int DecodeFast (const char* lpData, int nLen, Fast_Message_Impl* lpFastMsg, FastMsg_Templ* lpMsgTempl);
+    virtual int DecodeFastRecord (const char* lpData, int nLen, Fast_Record_Impl* lpRecord, FastMsg_Templ* lpMsgTempl) ;
 
   //解析Fast数据没有传入消息类型
   int DecodeFastForNotMsgType (const char* lpData, 

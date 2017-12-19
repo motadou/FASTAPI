@@ -12,38 +12,37 @@ class Fast_Record_Impl ;
 class FastGroup
 {
 public:
-  FastGroup () ;
+    FastGroup () ;
 
-  virtual ~FastGroup () ;
+    virtual ~FastGroup () ;
 
-  Fast_Record_Impl* AddRecord () ;
+    Fast_Record_Impl* AddRecord () ;
 
-  Fast_Record_Impl* GetRecord (int nSlot) ;
+    Fast_Record_Impl* GetRecord (int nSlot) ;
 
-  uint32 GetRecordCount () ;
+    uint32 GetRecordCount () ;
 
 protected:
-  std::vector <Fast_Record_Impl *>    m_ayRecords ; 
+    std::vector <Fast_Record_Impl *>    m_ayRecords ; 
 } ;
-
 
 struct Field_Value
 {
-  Fast_FieldType         ff_type ;
-  union
-  {
-    uint8   u8 ;
-    uint16  u16 ;
-    uint32  u32 ;
-    uint64  u64 ;
-    char    str [256] ;
-  } ff_value ;
+    Fast_FieldType         ff_type ;
+    union
+    {
+        uint8   u8 ;
+        uint16  u16 ;
+        uint32  u32 ;
+        uint64  u64 ;
+        char    str [256] ;
+    } ff_value ;
   
-  FastGroup              ff_group ;
+    FastGroup ff_group ;
 
-  Field_Value () ;
+    Field_Value () ;
 
-  ~Field_Value () ;
+    ~Field_Value () ;
 } ;
 
 class Fast_Record_Impl : public IFast_Record
