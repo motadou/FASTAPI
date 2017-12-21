@@ -411,61 +411,61 @@ public:
 class Fast_Method
 {
 public:
-  static Fast_FieldType StrToFieldType(const char *strType)
-  {
-    if (!strType)  return FFT_Null_Type ;
-	//  忽略大小写
-	std::string tmp_str(strType);
-	strType = tmp_str.c_str();
-	for (std::string::size_type i = 0; i < tmp_str.size(); i++)
-	{
-		tmp_str[i] = tolower(tmp_str[i]);
-	}
-	// 忽略大小写
+    static Fast_FieldType StrToFieldType(const char *strType)
+    {
+        if (!strType)  return FFT_Null_Type ;
+	    //  忽略大小写
+	    std::string tmp_str(strType);
+	    strType = tmp_str.c_str();
+	    for (std::string::size_type i = 0; i < tmp_str.size(); i++)
+	    {
+		    tmp_str[i] = tolower(tmp_str[i]);
+	    }
 
-    if (!strcmp(strType, "string"))
-      return FFT_String ;
-    else if (!strcmp(strType, "int32"))
-      return FFT_Int32  ;
-    else if (!strcmp(strType, "uint32"))
-      return FFT_UInt32 ;
-    else if (!strcmp(strType, "int64"))
-      return FFT_UInt64 ;
-    else if (!strcmp(strType, "uint64"))
-      return FFT_UInt64 ;
-    else if (!strcmp(strType, "sequence"))
-      return FFT_Sequence ;
-    else if (!strcmp(strType, "length"))
-      return FFT_Length ;
-    else
-      return FFT_Null_Type ;
-  }
+        // 忽略大小写
+        if (!strcmp(strType, "string"))
+            return FFT_String ;
+        else if (!strcmp(strType, "int32"))
+            return FFT_Int32  ;
+        else if (!strcmp(strType, "uint32"))
+            return FFT_UInt32 ;
+        else if (!strcmp(strType, "int64"))
+            return FFT_UInt64 ;
+        else if (!strcmp(strType, "uint64"))
+            return FFT_UInt64 ;
+        else if (!strcmp(strType, "sequence"))
+            return FFT_Sequence ;
+        else if (!strcmp(strType, "length"))
+            return FFT_Length ;
+        else
+            return FFT_Null_Type ;
+    }
 
-  static Fast_OP StrToFastOp(const char *strType)
-  {
-    if (!strType)  return OP_NULL ;
-    if (!strcmp(strType, "constant"))
-      return OP_Constant ;
-    else if (!strcmp(strType, "default"))
-      return OP_Default  ;
-    else if (!strcmp(strType, "copy"))
-      return OP_Copy ;
-    else if (!strcmp(strType, "increment"))
-      return OP_Increment ;
-    else if (!strcmp(strType, "delta"))
-		  return OP_Delta ;
-    else
-      return OP_NULL ;
-  }
+    static Fast_OP StrToFastOp(const char *strType)
+    {
+        if (!strType)  return OP_NULL ;
+        if (!strcmp(strType, "constant"))
+            return OP_Constant ;
+        else if (!strcmp(strType, "default"))
+            return OP_Default  ;
+        else if (!strcmp(strType, "copy"))
+            return OP_Copy ;
+        else if (!strcmp(strType, "increment"))
+            return OP_Increment ;
+        else if (!strcmp(strType, "delta"))
+		    return OP_Delta ;
+        else
+            return OP_NULL ;
+    }
 
-  static Fast_Presence StrToPres(const char *strPres)
-  {
-    if (!strPres) return PRES_Mandatory ;
-    if (!strcmp(strPres, "optional"))
-      return PRES_Optional ;
-    else
-      return PRES_Mandatory ;
-  }
+    static Fast_Presence StrToPres(const char *strPres)
+    {
+        if (!strPres) return PRES_Mandatory ;
+        if (!strcmp(strPres, "optional"))
+            return PRES_Optional ;
+        else
+            return PRES_Mandatory ;
+    }
 
   static int Slot(Fast_OP op, Fast_Presence pres)
   {

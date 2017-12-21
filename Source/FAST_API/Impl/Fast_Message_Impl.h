@@ -30,17 +30,19 @@ public:
   Fast_Record_Impl* AddRecord () ;
 
 protected:
-  virtual ~Fast_Message_Impl () ;
+    virtual ~Fast_Message_Impl () ;
 
-  // 发送时间
-  char                    m_strSendTime [21] ;
-  // 消息类型
-  char                    m_strMsgType [21] ;
-  // 消息序号
-  int                            m_nSeqNum ;
+    // 发送时间
+    char                            m_strSendTime [21] ;
+    
+    // 消息类型
+    char                            m_strMsgType [21] ;
 
-  // Records of Message
-  std::vector <IFast_Record*>    m_ayRecords ;
+    // 消息序号
+    int                             m_nSeqNum ;
+
+    // Records of Message
+    std::vector <IFast_Record*>     m_ayRecords ;
 } ;
 
 #endif

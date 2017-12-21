@@ -71,15 +71,11 @@ protected:
     virtual int DecodeFast (const char* lpData, int nLen, Fast_Message_Impl* lpFastMsg, FastMsg_Templ* lpMsgTempl);
     virtual int DecodeFastRecord (const char* lpData, int nLen, Fast_Record_Impl* lpRecord, FastMsg_Templ* lpMsgTempl) ;
 
-  //解析Fast数据没有传入消息类型
-  int DecodeFastForNotMsgType (const char* lpData, 
-	  int nLen, 
-	  Fast_Message_Impl* lpFastMsg) ;
+    //解析Fast数据没有传入消息类型
+    int DecodeFastForNotMsgType (const char* lpData, int nLen, Fast_Message_Impl* lpFastMsg) ;
 
-  //解析Fast数据没有传入消息类型
-  virtual FastMsg_Templ* DecodeFastRecordForNotMsgType (const char* lpFastData, 
-	  int nDataLen, 
-	  Fast_Record_Impl* lpRecord,int &nOffset) ;
+    //解析Fast数据没有传入消息类型
+    virtual FastMsg_Templ* DecodeFastRecordForNotMsgType (const char* lpFastData, int nDataLen, Fast_Record_Impl* lpRecord,int &nOffset) ;
 
   //解析Sequence的个数
   size_t DecodeSequenceCount(const char* lpfast_data, uint32& nCount, const Fast_Presence& pres) ;
