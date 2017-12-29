@@ -456,6 +456,7 @@ void Level2_Decoder_Demo::Deal_SH_NGTSTransaction(IFast_Record *Record)
 
 	printf("Transaction:%s\n",str.c_str());
 }
+
 void Level2_Decoder_Demo::Deal_SH_NGTSMarketData(IFast_Record *Record)
 {
 	const char* temp;

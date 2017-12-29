@@ -21,7 +21,7 @@ public:
 
   virtual int FUNCTION_CALL_MODE GetRecordCount () ;
 
-  virtual IFast_Record* FUNCTION_CALL_MODE GetRecord (int nSlot) ;
+  virtual IFast_Record* FUNCTION_CALL_MODE GetRecord(int nSlot) ;
 
   virtual const char* FUNCTION_CALL_MODE GetLastError () ;
 

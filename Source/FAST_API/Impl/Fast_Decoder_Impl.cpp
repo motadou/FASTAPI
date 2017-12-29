@@ -701,7 +701,7 @@ int Fast_Decoder_Impl::DecodeFastRecord(const char* lpFastData, int nDataLen, Fa
   return curr_size ;
 }
 
-int Fast_Decoder_Impl::DecodeFast(const char* lpData, int nLen, Fast_Message_Impl* lpFastMsg, FastMsg_Templ* lpMsgTempl)
+int Fast_Decoder_Impl::DecodeFast(const char * lpData, int nLen, Fast_Message_Impl * lpFastMsg, FastMsg_Templ* lpMsgTempl)
 {
     int nCurr = 0 ;
     while (nCurr < nLen)
