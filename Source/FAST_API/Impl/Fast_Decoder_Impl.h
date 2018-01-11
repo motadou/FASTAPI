@@ -96,31 +96,39 @@ protected:
     size_t DecodeFastType (const char* lpData, uint32& nMsgType) ;
     //解析FAST字节获得一个字段	
     size_t DecodeBytes (const char* lpData, char* lpBuf, size_t nDataLen) ;
+    
     //解析int32类型
     size_t DecodeInt32 (const char* lpData, Fast_Presence pres, Fast_Value& fast_val) ;
+    
     //解析int64类型
     size_t DecodeInt64 (const char* lpData, Fast_Presence pres, Fast_Value& fast_val) ;
+    
     //解析string类型
     size_t DecodeString (const char* lpData, Fast_Presence pres, Fast_Value& fast_val) ;
+    
     // 解析unicode string
     size_t DecodeUString(const char *lpData, Fast_Presence pres, Fast_Value &fast_val);
+    
     // 解析unicode string的长度 //20141126 tangmc 增加操作符
     size_t DecodeUStringLength(const char *lpData, uint32 &nLen, Fast_Presence pres);
 
     //获取pmap的第loc个bit
     int GetPMAPBit(const PMAP pmap, uint32 loc) ;
+    
     //判断字段的值是否出现在流中
     bool IsExistField (const FastMsg_Templ* lpMsgTempl, const  PMAP pmap, uint32 pos) ;
     bool IsExistInSeq (const FastMsg_Templ* lpMsgTempl, const  PMAP pmap, uint32 pos) ;
+    
     //解析NORMAL字段
     size_t DecodeNormalField (const char* lpData, const FastMsg_Templ* lpMsgTempl, const PMAP pmap, uint32 pos, Fast_Value &fast_val) ;
-  //解析字段值
-  size_t DecodeFieldValue (const char* lpData, Fast_Value& fast_val, Fast_Presence pres) ;
+    
+    //解析字段值
+    size_t DecodeFieldValue (const char* lpData, Fast_Value& fast_val, Fast_Presence pres) ;
 
-  //得到某一STEP字段值
-  std::string get_step_field_value(const char *buf, int len, const std::string &field_name);
+    //得到某一STEP字段值
+    std::string get_step_field_value(const char *buf, int len, const std::string &field_name);
 
-  std::string UTF8_To_GBK(const std::string& utf8_str);
+    std::string UTF8_To_GBK(const std::string& utf8_str);
 
 } ;
 

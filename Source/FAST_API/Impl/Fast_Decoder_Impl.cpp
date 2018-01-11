@@ -10,50 +10,50 @@ Fast_Decoder_Impl::Fast_Decoder_Impl (FAST_TYPE makettype)
 {
 }
 
-int FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::LoadTemplate (const char* lpFile)
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/// 模版加载
+int FUNCTION_CALL_MODE Fast_Decoder_Impl::LoadTemplate (const char* lpFile)
 {
-  this->m_bHasError = false ;
-  this->m_FastTempls.Clear () ;
-  this->m_mapFieldInfo.clear () ;
-  TiXmlDocument *pXmlDoc = new TiXmlDocument() ;
-  Delete_Guard<TiXmlDocument> guard (pXmlDoc) ;
-  if (pXmlDoc == 0)
+    this->m_bHasError = false ;
+    this->m_FastTempls.Clear () ;
+    this->m_mapFieldInfo.clear () ;
+    
+    TiXmlDocument *pXmlDoc = new TiXmlDocument() ;
+    Delete_Guard<TiXmlDocument> guard (pXmlDoc) ;
+    if (pXmlDoc == 0)
     {
-      this->m_bHasError = true ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "No memory.") ;
-      return -1 ;
+        this->m_bHasError = true ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "No memory.") ;
+        return -1 ;
     }
-  if (!pXmlDoc->LoadFile (lpFile))
+    
+    if (!pXmlDoc->LoadFile (lpFile))
     {
-      this->m_bHasError = true ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Load XML-File[%s] Failed, Error[%s].",
-                  lpFile, pXmlDoc->Error ()?pXmlDoc->ErrorDesc ():"") ;
-      return -1 ;
+        this->m_bHasError = true ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Load XML-File[%s] Failed, Error[%s].", lpFile, pXmlDoc->Error ()?pXmlDoc->ErrorDesc ():"") ;
+        return -1 ;
     }
 
-  TiXmlElement *pRootElement = pXmlDoc->RootElement() ;
-  if (!pRootElement)
+    TiXmlElement *pRootElement = pXmlDoc->RootElement() ;
+    if (!pRootElement)
     {
-      this->m_bHasError = true ;
-      ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Load XML-File[%s] Failed,Error[%s].",
-                  lpFile, pXmlDoc->Error ()?pXmlDoc->ErrorDesc ():"no root element") ;
-      return -1 ;
+        this->m_bHasError = true ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Load XML-File[%s] Failed,Error[%s].",lpFile, pXmlDoc->Error ()?pXmlDoc->ErrorDesc ():"no root element") ;
+        return -1 ;
     }
 
 	TiXmlElement *lpTempl = pRootElement->FirstChildElement("template") ;
-  while (lpTempl)
+    while (lpTempl)
     {
-       FastMsg_Templ* lpMsgTempl = this->LoadTemplate (lpTempl) ;
-       if (lpMsgTempl)
-         this->m_FastTempls.AddTempl (lpMsgTempl->templ_id, lpMsgTempl) ;
-       lpTempl = lpTempl->NextSiblingElement () ;
+        FastMsg_Templ* lpMsgTempl = this->LoadTemplate(lpTempl) ;
+        if (lpMsgTempl)
+            this->m_FastTempls.AddTempl (lpMsgTempl->templ_id, lpMsgTempl) ;
+
+        lpTempl = lpTempl->NextSiblingElement () ;
     }
-  //this->m_FastTempls.Print () ;
-  return 0 ;
+
+    //this->m_FastTempls.Print () ;
+    return 0 ;
 }
 
 int FUNCTION_CALL_MODE Fast_Decoder_Impl::LoadTemplateForSZG5HQ (const char* lpFile)
@@ -109,6 +109,182 @@ int FUNCTION_CALL_MODE Fast_Decoder_Impl::LoadTemplateForSZG5HQ (const char* lpF
 	return 0 ;
 }
 
+FastMsg_Templ * Fast_Decoder_Impl::LoadTemplate (TiXmlElement *pXmlElement)
+{
+    if (pXmlElement == 0)
+        return 0 ;
+
+    FastMsg_Templ* lpMsgTempl = new FastMsg_Templ ;
+    //const char *lpNameStr = pXmlElement->Value() ;
+    const char *lpTName   = pXmlElement->Attribute("name") ;
+    const char *lpTID     = pXmlElement->Attribute("id") ;
+
+    // 模板名称
+    if (lpTName)
+        strcpy (lpMsgTempl->templ_name, lpTName) ;
+
+    // 模板ID
+    if (lpTID)
+        lpMsgTempl->templ_id = atoi (lpTID) ;
+
+    // 载入模板字段
+    TiXmlElement *pChild = pXmlElement->FirstChildElement() ;
+    while (pChild)
+    {
+        Fast_TemplField* lpFieldTempl = this->LoadFieldTempl(pChild) ;
+        if (lpFieldTempl)
+        {
+            if (m_mapFieldInfo.find(lpFieldTempl->field_id) == m_mapFieldInfo.end ())
+            {
+                m_mapFieldInfo [lpFieldTempl->field_id] = lpFieldTempl ;
+            }
+
+            if (lpFieldTempl->field_slot == 1)
+            {
+                lpFieldTempl->field_slot = lpMsgTempl->slot_count ;
+                ++lpMsgTempl->slot_count ;
+            }
+            else
+                lpFieldTempl->field_slot = -1 ;
+
+            lpMsgTempl->field_array.push_back (lpFieldTempl) ;
+
+            ++lpMsgTempl->field_count ;
+        }
+
+        pChild = pChild->NextSiblingElement () ;
+    }
+
+    return lpMsgTempl ;
+}
+
+Fast_TemplField * Fast_Decoder_Impl::LoadFieldTempl (TiXmlElement * pXmlElement)
+{
+    const char *lpValue   = pXmlElement->Value() ;
+    const char *lpName    = pXmlElement->Attribute("name") ;
+    const char *lpID      = pXmlElement->Attribute("id") ;
+    const char *lpPres    = pXmlElement->Attribute("presence") ;
+    const char *lpDecimal = pXmlElement->Attribute("decimalPlaces") ;
+
+    Fast_FieldType field_type = Fast_Method::StrToFieldType (lpValue) ;
+    if (FFT_Null_Type == field_type)
+    {
+        this->m_bHasError = true ;
+        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Template Field[%s] Unkown Type.", lpValue) ;
+        return 0 ;
+    }
+
+    ///2014-02-19 tangmc 增加市场判断
+    /* if (emFAST_SZLEVEL2 ==m_makettype)*/
+    {
+        /// 2014-02-19 unicode string
+        if (field_type == FFT_String)
+        {
+            lpValue = pXmlElement->Attribute("charset");
+            if (lpValue && !strcmp(lpValue, "unicode"))
+            {
+                field_type = FFT_UString;
+            }
+        }
+    }
+
+    Fast_TemplField* lpTemplField = new Fast_TemplField ;
+    // 字段类型
+    lpTemplField->field_type = field_type ;
+    lpTemplField->field_curval.field_type = lpTemplField->field_opval.field_type = field_type ;
+    // 字段名称
+    if (lpName)
+        strcpy(lpTemplField->field_name, lpName) ;
+
+    //
+    if (FFT_Sequence == field_type)
+    {
+        lpTemplField->seq_ptr = this->LoadTemplate (pXmlElement) ;
+
+        ///2014-02-18 tangmc 增加市场判断
+        if (emFAST_SZLEVEL2 == m_makettype)
+        {
+            if (lpID)
+                lpTemplField->field_id = atoi (lpID) ;
+
+            if (lpPres)
+                lpTemplField->field_pres = Fast_Method::StrToPres (lpPres) ;
+            else
+                lpTemplField->field_pres = PRES_Mandatory ;
+
+            lpTemplField->field_slot = Fast_Method::Slot(lpTemplField->field_op, lpTemplField->field_pres) ;
+        }
+        ///2014-02-18 tangmc 增加市场判断
+    }
+    else
+    {
+        if (lpID)
+            lpTemplField->field_id   = atoi (lpID) ;
+
+        if (lpPres)
+            lpTemplField->field_pres = Fast_Method::StrToPres (lpPres) ;
+        else
+            lpTemplField->field_pres = PRES_Mandatory ;
+
+        ///2014-02-18  tangmc 增加市场判断  
+        // 2014-02-18  深圳L2用precision表示小数位数
+        if (!lpDecimal && emFAST_SZLEVEL2 == m_makettype)
+        {
+            lpDecimal = pXmlElement->Attribute("precision") ;
+        }
+        // 2014-02-18  深圳L2用precision表示小数位数
+
+        if (lpDecimal)
+        {
+            lpTemplField->decimal_place = atoi (lpDecimal) ;
+            lpTemplField->field_curval.decimal_place = lpTemplField->field_opval.decimal_place = 
+                lpTemplField->decimal_place ;
+        }
+
+        // Op
+        TiXmlElement *lpChild = pXmlElement->FirstChildElement() ;
+        if (lpChild)
+        {
+            const char* lpOp = lpChild->Value () ;
+            if (lpOp)
+                lpTemplField->field_op = Fast_Method::StrToFastOp (lpOp) ;
+            const char* lpValue = lpChild->Attribute ("value") ;
+            if (lpValue && OP_Constant == lpTemplField->field_op)
+            {
+                lpTemplField->field_opval.field_type = lpTemplField->field_type ;
+                strcpy(lpTemplField->field_opval.val.str, lpValue) ;
+            }
+
+            ///2014-02-18 tangmc 增加深圳市场判断 
+
+            // 2014-02-18 为深圳L2增加
+            else if (lpValue  &&  lpTemplField->field_op == OP_Default && emFAST_SZLEVEL2==m_makettype)
+            {
+                if (lpTemplField->field_type == FFT_Int32  ||  lpTemplField->field_type == FFT_UInt32)
+                {
+                    lpTemplField->field_opval.val.l4 = atol(lpValue);
+                }
+                else
+                {
+                    strcpy(lpTemplField->field_opval.val.str, lpValue);
+                }
+            }
+            else if (lpValue  &&  lpTemplField->field_op == OP_Copy && emFAST_SZLEVEL2==m_makettype)
+            {
+                // copy 且有 value, 目前深圳L2 FAST只有string类型
+                strcpy(lpTemplField->field_opval.val.str, lpValue);
+                lpTemplField->ResetCurrentValue();
+            }
+            // 2014-02-18 为深圳L2增加
+        }
+
+        lpTemplField->field_slot = Fast_Method::Slot(lpTemplField->field_op, lpTemplField->field_pres) ;
+    }
+
+    return lpTemplField ;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 int FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int nLen)
 {
     this->m_bHasError = false ;
@@ -250,7 +426,7 @@ IFast_Message * FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData,
     }
     else
     {
-	    int  nPos = lpSeqNum.length()<20?lpSeqNum.length():20;
+	    int nPos = lpSeqNum.length()<20?lpSeqNum.length():20;
 	  
 	    memset(tmp_buf,0,21);
 	    memcpy(tmp_buf,lpSeqNum.c_str(),nPos);
@@ -418,192 +594,20 @@ Fast_Decoder_Impl::GetFieldInfo (int nTagID)
   return 0 ;
 }
 
-const char* FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::GetLastError ()
+const char* FUNCTION_CALL_MODE Fast_Decoder_Impl::GetLastError ()
 {
-  if (this->m_bHasError)
-    return this->m_strError ;
-  else
-    return "No error." ;
-}
-
-void FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::Release ()
-{
-  delete this ;
-}
-
-FastMsg_Templ* 
-Fast_Decoder_Impl::LoadTemplate (TiXmlElement *pXmlElement)
-{
-  if (pXmlElement == 0)
-    return 0 ;
-
-  FastMsg_Templ* lpMsgTempl = new FastMsg_Templ ;
-	//const char *lpNameStr = pXmlElement->Value() ;
-  const char *lpTName   = pXmlElement->Attribute("name") ;
-	const char *lpTID     = pXmlElement->Attribute("id") ;
-
-  // 模板名称
-  if (lpTName)
-    strcpy (lpMsgTempl->templ_name, lpTName) ;
-  // 模板ID
-  if (lpTID)
-    lpMsgTempl->templ_id = atoi (lpTID) ;
-
-  // 载入模板字段
-  TiXmlElement *pChild = pXmlElement->FirstChildElement() ;
-  while (pChild)
-    {
-      Fast_TemplField* lpFieldTempl = this->LoadFieldTempl (pChild) ;
-      if (lpFieldTempl)
-        {
-          if (m_mapFieldInfo.find (lpFieldTempl->field_id) == m_mapFieldInfo.end ())
-            {
-              m_mapFieldInfo [lpFieldTempl->field_id] = lpFieldTempl ;
-            }
-          if (lpFieldTempl->field_slot == 1)
-            {
-              lpFieldTempl->field_slot = lpMsgTempl->slot_count ;
-              ++lpMsgTempl->slot_count ;
-            }
-          else
-            lpFieldTempl->field_slot = -1 ;
-
-          lpMsgTempl->field_array.push_back (lpFieldTempl) ;
-          ++lpMsgTempl->field_count ;
-        }
-      pChild = pChild->NextSiblingElement () ;
-    }
-  return lpMsgTempl ;
-}
-
-Fast_TemplField * Fast_Decoder_Impl::LoadFieldTempl (TiXmlElement * pXmlElement)
-{
-    const char *lpValue   = pXmlElement->Value() ;
-    const char *lpName    = pXmlElement->Attribute("name") ;
-	const char *lpID      = pXmlElement->Attribute("id") ;
-    const char *lpPres    = pXmlElement->Attribute("presence") ;
-    const char *lpDecimal = pXmlElement->Attribute("decimalPlaces") ;
-
-    Fast_FieldType field_type = Fast_Method::StrToFieldType (lpValue) ;
-    if (FFT_Null_Type == field_type)
-    {
-        this->m_bHasError = true ;
-        ::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Template Field[%s] Unkown Type.", lpValue) ;
-        return 0 ;
-    }
-
-  ///2014-02-19 tangmc 增加市场判断
- /* if (emFAST_SZLEVEL2 ==m_makettype)*/
-  {
-	  /// 2014-02-19 unicode string
-	  if (field_type == FFT_String)
-	  {
-		  lpValue = pXmlElement->Attribute("charset");
-		  if (lpValue && !strcmp(lpValue, "unicode"))
-		  {
-			  field_type = FFT_UString;
-		  }
-	  }
-  }
-
-    Fast_TemplField* lpTemplField = new Fast_TemplField ;
-    // 字段类型
-    lpTemplField->field_type = field_type ;
-    lpTemplField->field_curval.field_type = lpTemplField->field_opval.field_type = field_type ;
-    // 字段名称
-    if (lpName)
-        strcpy(lpTemplField->field_name, lpName) ;
-    
-    //
-    if (FFT_Sequence == field_type)
-    {
-        lpTemplField->seq_ptr = this->LoadTemplate (pXmlElement) ;
-      
-	    ///2014-02-18 tangmc 增加市场判断
-	    if (emFAST_SZLEVEL2 == m_makettype)
-	    {
-		    if (lpID)
-			    lpTemplField->field_id = atoi (lpID) ;
-
-		    if (lpPres)
-			    lpTemplField->field_pres = Fast_Method::StrToPres (lpPres) ;
-		    else
-			    lpTemplField->field_pres = PRES_Mandatory ;
-
-		    lpTemplField->field_slot = Fast_Method::Slot(lpTemplField->field_op, lpTemplField->field_pres) ;
-        }
-	    ///2014-02-18 tangmc 增加市场判断
-    }
+    if (this->m_bHasError)
+        return this->m_strError ;
     else
-    {
-        if (lpID)
-            lpTemplField->field_id   = atoi (lpID) ;
-        
-        if (lpPres)
-            lpTemplField->field_pres = Fast_Method::StrToPres (lpPres) ;
-        else
-            lpTemplField->field_pres = PRES_Mandatory ;
-
-	   ///2014-02-18  tangmc 增加市场判断  
-	   // 2014-02-18  深圳L2用precision表示小数位数
-	   if (!lpDecimal && emFAST_SZLEVEL2 == m_makettype)
-	   {
-		   lpDecimal = pXmlElement->Attribute("precision") ;
-	   }
-	   // 2014-02-18  深圳L2用precision表示小数位数
-
-        if (lpDecimal)
-        {
-          lpTemplField->decimal_place = atoi (lpDecimal) ;
-          lpTemplField->field_curval.decimal_place = lpTemplField->field_opval.decimal_place = 
-                                                                          lpTemplField->decimal_place ;
-        }
-
-      // Op
-      TiXmlElement *lpChild = pXmlElement->FirstChildElement() ;
-      if (lpChild)
-        {
-          const char* lpOp = lpChild->Value () ;
-          if (lpOp)
-            lpTemplField->field_op = Fast_Method::StrToFastOp (lpOp) ;
-          const char* lpValue = lpChild->Attribute ("value") ;
-          if (lpValue && OP_Constant == lpTemplField->field_op)
-            {
-              lpTemplField->field_opval.field_type = lpTemplField->field_type ;
-              strcpy(lpTemplField->field_opval.val.str, lpValue) ;
-            }
-
-		  ///2014-02-18 tangmc 增加深圳市场判断 
-
-		  // 2014-02-18 为深圳L2增加
-		  else if (lpValue  &&  lpTemplField->field_op == OP_Default && emFAST_SZLEVEL2==m_makettype)
-		  {
-			  if (lpTemplField->field_type == FFT_Int32  ||  lpTemplField->field_type == FFT_UInt32)
-			  {
-				  lpTemplField->field_opval.val.l4 = atol(lpValue);
-			  }
-			  else
-			  {
-				  strcpy(lpTemplField->field_opval.val.str, lpValue);
-			  }
-		  }
-		  else if (lpValue  &&  lpTemplField->field_op == OP_Copy && emFAST_SZLEVEL2==m_makettype)
-		  {
-			  // copy 且有 value, 目前深圳L2 FAST只有string类型
-			  strcpy(lpTemplField->field_opval.val.str, lpValue);
-			  lpTemplField->ResetCurrentValue();
-		  }
-		  // 2014-02-18 为深圳L2增加
-        }
-
-      lpTemplField->field_slot = Fast_Method::Slot(lpTemplField->field_op, lpTemplField->field_pres) ;
-    }
-
-  return lpTemplField ;
+        return "No error." ;
 }
 
+void FUNCTION_CALL_MODE Fast_Decoder_Impl::Release ()
+{
+    delete this ;
+}
+
+/////////////////////////////////////////////////////////////////////////
 int Fast_Decoder_Impl::DecodeFastRecord(const char* lpFastData, int nDataLen, Fast_Record_Impl* lpRecord, FastMsg_Templ* lpMsgTempl)
 {
     size_t curr_size  = 0;
@@ -650,26 +654,26 @@ int Fast_Decoder_Impl::DecodeFastRecord(const char* lpFastData, int nDataLen, Fa
             //decode sequence field
 			///2014-02-18 tangmc 增加市场判断 
 			uint32 nTagID = 0;
-			if (emFAST_SHLEVEL2 ==m_makettype)
+			if (emFAST_SHLEVEL2 == m_makettype)
 			{
 				if (lpFieldTempl->seq_ptr->field_array[0]->field_type != FFT_Length)
 				{
 					this->m_bHasError = true ;
-					::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-						"Decode FastData Error: template[%s-%d] has error field_id[%d].",
-						lpMsgTempl->templ_name, lpMsgTempl->templ_id, lpFieldTempl->field_id) ;
+					::snprintf (this->m_strError, sizeof (this->m_strError)-1, "Decode FastData Error: template[%s-%d] has error field_id[%d].", lpMsgTempl->templ_name, lpMsgTempl->templ_id, lpFieldTempl->field_id) ;
 					return -1 ;
 				}
 				nTagID = lpFieldTempl->seq_ptr->field_array[0]->field_id ;
 			}
-			else if (emFAST_SZLEVEL2==m_makettype)
+			else if (emFAST_SZLEVEL2 == m_makettype)
 			{
 				nTagID = lpFieldTempl->field_id;
 			}
-			if( 0 == nTagID )
+			
+            if( 0 == nTagID )
 			{
 				return -1;
 			}
+
             FastGroup* lpGroup = lpRecord->SetGroup (nTagID) ;
 		  
 		    ///2014-02-18 tangmc 增加市场判断
@@ -860,44 +864,44 @@ FastMsg_Templ*  Fast_Decoder_Impl::DecodeFastRecordForNotMsgType (const char* lp
 
 // 
 
-size_t 
-Fast_Decoder_Impl::DecodeSequenceCount (const char* lpFastData, uint32& nCount, const Fast_Presence& pres)
+size_t Fast_Decoder_Impl::DecodeSequenceCount (const char* lpFastData, uint32& nCount, const Fast_Presence& pres)
 {
-  Fast_Value fast_val ;
-  nCount = 0 ;
-  size_t size = DecodeInt32 (lpFastData, pres, fast_val) ;
-  if( size>0 )
-    nCount = fast_val.val.l4 ;
-  return size ;
+    Fast_Value fast_val ;
+    nCount = 0 ;
+    
+    size_t size = DecodeInt32 (lpFastData, pres, fast_val) ;
+    
+    if ( size>0 )
+        nCount = fast_val.val.l4 ;
+    
+    return size ;
 }
 
-size_t 
-Fast_Decoder_Impl::DecodeSequenceSH (FastGroup *lpGroup, const char* lpFastData, size_t nDataLen, FastMsg_Templ* lpMsgTempl)
+size_t Fast_Decoder_Impl::DecodeSequenceSH (FastGroup *lpGroup, const char* lpFastData, size_t nDataLen, FastMsg_Templ* lpMsgTempl)
 {
-  PMAP seq_pmap ;
-  size_t curr_size = 0 ;
-  uint32 seq_count = 0 ;
-  memset (seq_pmap, 0, sizeof(PMAP)) ;
-  curr_size += DecodeSequenceCount (lpFastData, seq_count, lpMsgTempl->field_array[0]->field_pres) ;
+    PMAP seq_pmap ;
+    size_t curr_size = 0 ;
+    uint32 seq_count = 0 ;
+    memset (seq_pmap, 0, sizeof(PMAP)) ;
+    
+    curr_size += DecodeSequenceCount(lpFastData, seq_count, lpMsgTempl->field_array[0]->field_pres) ;
 
-  Fast_Value  fast_val ;
-  for (size_t i=0; i<seq_count; ++i)
-  {
-    Fast_Record_Impl* lpRecord = lpGroup->AddRecord () ;
-    if (lpMsgTempl->slot_count > 0)
-      curr_size += DecodePMAP (lpFastData + curr_size, nDataLen - curr_size, seq_pmap) ;
-    for (uint32 j=1; j<lpMsgTempl->field_count; ++j)
+    Fast_Value  fast_val ;
+    for (size_t i = 0; i < seq_count; ++i)
     {
-      Fast_TemplField *lpFieldTempl = lpMsgTempl->field_array[j] ;
-      if (FFT_Sequence == lpFieldTempl->field_type)
-      {
-        int nTagID = lpFieldTempl->seq_ptr->field_array[0]->field_id ;
-        FastGroup* lpGroup = lpRecord->SetGroup (nTagID) ;
-        curr_size += DecodeSequenceSH (lpGroup, 
-	                                   lpFastData + curr_size, 
-                                     nDataLen - curr_size, 
-                                     lpFieldTempl->seq_ptr) ;
-      }
+        Fast_Record_Impl* lpRecord = lpGroup->AddRecord () ;
+        if (lpMsgTempl->slot_count > 0)
+            curr_size += DecodePMAP (lpFastData + curr_size, nDataLen - curr_size, seq_pmap) ;
+
+        for (uint32 j = 1; j < lpMsgTempl->field_count; ++j)
+        {
+            Fast_TemplField *lpFieldTempl = lpMsgTempl->field_array[j] ;
+            if (FFT_Sequence == lpFieldTempl->field_type)
+            {
+                int nTagID = lpFieldTempl->seq_ptr->field_array[0]->field_id ;
+                FastGroup* lpGroup = lpRecord->SetGroup (nTagID) ;
+                curr_size += DecodeSequenceSH (lpGroup, lpFastData + curr_size, nDataLen - curr_size, lpFieldTempl->seq_ptr) ;
+            }
       else
       {
         if( IsExistInSeq (lpMsgTempl, seq_pmap, j) )
@@ -1191,41 +1195,43 @@ size_t Fast_Decoder_Impl::DecodeUStringLength(const char *lpData, uint32 &nLen, 
 	return size ;
 }
 
-
-int 
-Fast_Decoder_Impl::GetPMAPBit (const PMAP pmap, uint32 loc)
+int Fast_Decoder_Impl::GetPMAPBit (const PMAP pmap, uint32 loc)
 {
-  int byte_loc = loc/8 ;
-  int bit_loc  = loc%8 ;
-  if (byte_loc > FAST_PMAPSIZE || byte_loc < 0)
-    return -1 ;
-  char b = pmap[byte_loc] ;
-  if (b>>(7-bit_loc) & 1)
-    return 1 ;
-  else
-    return 0 ;
+    int byte_loc = loc/8 ;
+    int bit_loc  = loc%8 ;
+    if (byte_loc > FAST_PMAPSIZE || byte_loc < 0)
+        return -1 ;
+    char b = pmap[byte_loc] ;
+    if (b>>(7-bit_loc) & 1)
+        return 1 ;
+    else
+        return 0 ;
 }
 
-bool 
-Fast_Decoder_Impl::IsExistField (const FastMsg_Templ* lpMsgTempl, const  PMAP pmap, uint32 pos)
+bool Fast_Decoder_Impl::IsExistField (const FastMsg_Templ* lpMsgTempl, const  PMAP pmap, uint32 pos)
 {
-  if (OP_Constant == lpMsgTempl->field_array[pos]->field_op)
-    return false ;
-  if (-1 == lpMsgTempl->field_array[pos]->field_slot)
-    return true  ;
-  int bit_val = GetPMAPBit (pmap, lpMsgTempl->field_array[pos]->field_slot + 1) ;
-  return (bit_val == 1)?true:false ;
+    if (OP_Constant == lpMsgTempl->field_array[pos]->field_op)
+        return false ;
+    
+    if (-1 == lpMsgTempl->field_array[pos]->field_slot)
+        return true  ;
+    
+    int bit_val = GetPMAPBit(pmap, lpMsgTempl->field_array[pos]->field_slot + 1) ;
+    
+    return (bit_val == 1)?true:false ;
 }
 
-bool 
-Fast_Decoder_Impl::IsExistInSeq (const FastMsg_Templ* lpMsgTempl, const  PMAP pmap, uint32 pos)
+bool Fast_Decoder_Impl::IsExistInSeq (const FastMsg_Templ* lpMsgTempl, const  PMAP pmap, uint32 pos)
 {
-  if (OP_Constant == lpMsgTempl->field_array[pos]->field_op)
-    return false ;
-  if (-1 == lpMsgTempl->field_array[pos]->field_slot)
-    return true  ;
-  int bit_val = GetPMAPBit (pmap, lpMsgTempl->field_array[pos]->field_slot) ;
-  return (bit_val == 1)?true:false ;
+    if (OP_Constant == lpMsgTempl->field_array[pos]->field_op)
+        return false ;
+    
+    if (-1 == lpMsgTempl->field_array[pos]->field_slot)
+        return true  ;
+    
+    int bit_val = GetPMAPBit (pmap, lpMsgTempl->field_array[pos]->field_slot) ;
+    
+    return (bit_val == 1)?true:false ;
 }
 
 size_t Fast_Decoder_Impl::DecodeNormalField (const char* lpData, const FastMsg_Templ* lpMsgTempl, const PMAP pmap, uint32 pos, Fast_Value &fast_val)
@@ -1250,9 +1256,10 @@ size_t Fast_Decoder_Impl::DecodeNormalField (const char* lpData, const FastMsg_T
 		    else if (emFAST_SZLEVEL2 == m_makettype)
 		    {
 			    // 2014-02-18 tangmc 修改
-			    if (lpFieldTempl->IsAssignedCurrentValue()  &&  lpFieldTempl->field_op == OP_Delta  &&  (lpFieldTempl->field_type==FFT_Int32 || lpFieldTempl->field_type==FFT_UInt32 || lpFieldTempl->field_type==FFT_Int64 || lpFieldTempl->field_type==FFT_UInt64))
+			    if (lpFieldTempl->IsAssignedCurrentValue()  &&  lpFieldTempl->field_op == OP_Delta  &&  
+                    (lpFieldTempl->field_type == FFT_Int32 || lpFieldTempl->field_type == FFT_UInt32 || lpFieldTempl->field_type == FFT_Int64 || lpFieldTempl->field_type==FFT_UInt64))
 			    {
-				    if (lpFieldTempl->field_type==FFT_Int32 || lpFieldTempl->field_type==FFT_UInt32)
+				    if (lpFieldTempl->field_type == FFT_Int32 || lpFieldTempl->field_type==FFT_UInt32)
 				    {
 					    lpFieldTempl->field_curval.val.l4 += fast_val.val.l4;
 				    }

@@ -467,16 +467,13 @@ public:
             return PRES_Mandatory ;
     }
 
-  static int Slot(Fast_OP op, Fast_Presence pres)
-  {
-    if(  (op==OP_NULL) 
-       ||(op==OP_Constant && PRES_Mandatory == pres)
-       ||(op==OP_Delta && PRES_Mandatory == pres)
-      )
-      return 0 ;
-    else
-      return 1 ;
-  }
+    static int Slot(Fast_OP op, Fast_Presence pres)
+    {
+        if ((op == OP_NULL) || (op == OP_Constant && PRES_Mandatory == pres) || ( op == OP_Delta && PRES_Mandatory == pres))
+            return 0 ;
+        else
+            return 1 ;
+    }
 };
 
 #endif
