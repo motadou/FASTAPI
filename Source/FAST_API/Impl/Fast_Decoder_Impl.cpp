@@ -237,8 +237,7 @@ Fast_TemplField * Fast_Decoder_Impl::LoadFieldTempl (TiXmlElement * pXmlElement)
         if (lpDecimal)
         {
             lpTemplField->decimal_place = atoi (lpDecimal) ;
-            lpTemplField->field_curval.decimal_place = lpTemplField->field_opval.decimal_place = 
-                lpTemplField->decimal_place ;
+            lpTemplField->field_curval.decimal_place = lpTemplField->field_opval.decimal_place = lpTemplField->decimal_place;
         }
 
         // Op
@@ -727,26 +726,20 @@ int Fast_Decoder_Impl::DecodeFast(const char * lpData, int nLen, Fast_Message_Im
     return 0 ;
 }
 
-
-int Fast_Decoder_Impl::DecodeFastForNotMsgType (const char* lpData, 
-	int nLen, 
-	Fast_Message_Impl* lpFastMsg) 
+int Fast_Decoder_Impl::DecodeFastForNotMsgType(const char* lpData, int nLen, Fast_Message_Impl* lpFastMsg) 
 {
 	FastMsg_Templ* lpMsgTempl = NULL;
 	int nCurr = 0 ;
 	while (nCurr < nLen)
 	{
-		Fast_Record_Impl* lpRecord = lpFastMsg->AddRecord () ;
+		Fast_Record_Impl* lpRecord = lpFastMsg->AddRecord() ;
 
 		int nOffset =0;
-		lpMsgTempl = this->DecodeFastRecordForNotMsgType (lpData + nCurr,
-			nLen - nCurr,
-			lpRecord,
-			nOffset) ;
+		lpMsgTempl = this->DecodeFastRecordForNotMsgType(lpData + nCurr, nLen - nCurr, lpRecord, nOffset) ;
 		if (nOffset <= 0)
 			return -1 ;
 		nCurr += nOffset ;
-	} ;
+	}
 
 	// 增加深圳值的释放
 	if (emFAST_SZLEVEL2==m_makettype && lpMsgTempl)
@@ -758,23 +751,20 @@ int Fast_Decoder_Impl::DecodeFastForNotMsgType (const char* lpData,
 	return 0 ;
 }
 
-FastMsg_Templ*  Fast_Decoder_Impl::DecodeFastRecordForNotMsgType (const char* lpFastData, 
-	int nDataLen,
-	Fast_Record_Impl* lpRecord,int &nOffset) 
+FastMsg_Templ * Fast_Decoder_Impl::DecodeFastRecordForNotMsgType(const char* lpFastData, int nDataLen,	Fast_Record_Impl * lpRecord, int &nOffset) 
 {
-	nOffset = -1;
+	nOffset           = -1;
 	size_t curr_size  = 0 ;
 	size_t ret_size   = 0 ;
 
 	//解析PMAP
 	PMAP pmap ;
 	memset(pmap, 0, sizeof(PMAP)) ;
-	ret_size = DecodePMAP (lpFastData, FAST_PMAPSIZE, pmap) ;
+	ret_size = DecodePMAP(lpFastData, FAST_PMAPSIZE, pmap) ;
 	if (ret_size == 0)
 	{
 		this->m_bHasError = true ;
-		::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-			"Decode FastData Error: PMAP Excp.") ;
+		::snprintf (this->m_strError, sizeof (this->m_strError)-1,"Decode FastData Error: PMAP Excp.") ;
 		return 0 ;
 	}
 	curr_size += ret_size ;
@@ -793,8 +783,7 @@ FastMsg_Templ*  Fast_Decoder_Impl::DecodeFastRecordForNotMsgType (const char* lp
 	if (!lpMsgTempl)
 	{
 		this->m_bHasError = true ;
-		::snprintf (this->m_strError, sizeof (this->m_strError)-1, "FAST type[%d] template not found.",
-			fast_msgtype) ;
+		::snprintf (this->m_strError, sizeof (this->m_strError)-1, "FAST type[%d] template not found.", fast_msgtype) ;
 		return 0 ;
 	}
 
@@ -1000,7 +989,7 @@ size_t
 
 int Fast_Decoder_Impl::SetFastValRecord (Fast_Record_Impl* lpRecord, uint32& nID, const Fast_Value& fast_val)
 {
-  switch( fast_val.field_type )
+    switch( fast_val.field_type )
   {
   case FFT_Int32:
   case FFT_UInt32:
@@ -1050,28 +1039,27 @@ Fast_Decoder_Impl::DecodePMAP (const char* lpData, size_t nDataLen, PMAP pmap)
 
 size_t Fast_Decoder_Impl::DecodeFastType (const char* lpData, uint32& nMsgType)
 {
-  Fast_Value fast_value ;
+    Fast_Value fast_value ;
   
-  ///2014-02-18 tangmc 增加市场判断
-  if (emFAST_SHLEVEL2 == m_makettype)
-  {
-	  fast_value.field_type = FFT_Int32 ;
-  }
-  else if (emFAST_SZLEVEL2 ==m_makettype)
-  {
-	  // 2014-02-18 tangmc
-	  //   fast_value.field_type = FFT_Int32 ;
-	  fast_value.field_type = FFT_UInt32 ;
-	  // 2014-02-18 tangmc
-  }
+    ///2014-02-18 tangmc 增加市场判断
+    if (emFAST_SHLEVEL2 == m_makettype)
+    {
+	    fast_value.field_type = FFT_Int32 ;
+    }
+    else if (emFAST_SZLEVEL2 ==m_makettype)
+    {
+	    // 2014-02-18 tangmc
+	    //   fast_value.field_type = FFT_Int32 ;
+	    fast_value.field_type = FFT_UInt32 ;
+	    // 2014-02-18 tangmc
+    }
   
-  size_t size = DecodeInt32 (lpData, PRES_Mandatory, fast_value) ;
-  nMsgType = static_cast<uint32> (fast_value.val.l4) ;
-  return size ;
+    size_t size = DecodeInt32 (lpData, PRES_Mandatory, fast_value) ;
+    nMsgType = static_cast<uint32> (fast_value.val.l4) ;
+    return size ;
 }
 
-size_t 
-Fast_Decoder_Impl::DecodeBytes (const char* lpData, char* lpBuf, size_t nDataLen)
+size_t Fast_Decoder_Impl::DecodeBytes (const char* lpData, char* lpBuf, size_t nDataLen)
 {
   for(size_t i=0; i<nDataLen; ++i)
   {
@@ -1146,24 +1134,22 @@ Fast_Decoder_Impl::DecodeInt64 (const char* lpData, Fast_Presence pres, Fast_Val
   return size ;
 }
 
-size_t 
-Fast_Decoder_Impl::DecodeString (const char* lpData, Fast_Presence pres, Fast_Value& fast_val)
+size_t Fast_Decoder_Impl::DecodeString(const char * lpData, Fast_Presence pres, Fast_Value& fast_val)
 {
-  char b[FAST_MAXSTRINGLEN] ;
-  size_t size = DecodeBytes (lpData, b, FAST_MAXSTRINGLEN) ;
-  if (size > 0)
-  {
-    memcpy(fast_val.val.str, b, size) ;
-    fast_val.val.str[size] = 0 ;
-    if (PRES_Optional == pres)
+    char b[FAST_MAXSTRINGLEN] ;
+    size_t size = DecodeBytes (lpData, b, FAST_MAXSTRINGLEN) ;
+    if (size > 0)
     {
-      if ( 1==size 
-        && fast_val.val.str[0]==0 )
-	fast_val.field_type = FFT_Null_Type ;
+        memcpy(fast_val.val.str, b, size) ;
+        fast_val.val.str[size] = 0 ;
+        if (PRES_Optional == pres)
+        {
+            if (1 == size && fast_val.val.str[0] == 0)
+	            fast_val.field_type = FFT_Null_Type;
+        }
     }
-  }
 
-  return size ;
+    return size;
 }
 
 size_t Fast_Decoder_Impl::DecodeUString(const char *lpData, Fast_Presence pres, Fast_Value &fast_val)
@@ -1202,7 +1188,8 @@ int Fast_Decoder_Impl::GetPMAPBit (const PMAP pmap, uint32 loc)
     if (byte_loc > FAST_PMAPSIZE || byte_loc < 0)
         return -1 ;
     char b = pmap[byte_loc] ;
-    if (b>>(7-bit_loc) & 1)
+    
+    if (b >> (7-bit_loc) & 1)
         return 1 ;
     else
         return 0 ;
@@ -1240,12 +1227,16 @@ size_t Fast_Decoder_Impl::DecodeNormalField (const char* lpData, const FastMsg_T
     fast_val.field_type = lpFieldTempl->field_type ;
     bool bIsExist = IsExistField (lpMsgTempl, pmap, pos) ;
     size_t size = 0 ;
+    
     if (bIsExist)
     {
         fast_val.decimal_place = lpFieldTempl->decimal_place ;
-        size = DecodeFieldValue(lpData, fast_val, lpFieldTempl->field_pres) ;
+        size = DecodeFieldValue(lpData, fast_val, lpFieldTempl->field_pres);
+        
         if (size == 0)
+        {
             printf("无法解析字段:TEMPL_NAME:%s [%s %d] slot:%d\n", lpMsgTempl->templ_name , lpFieldTempl->field_name, lpFieldTempl->field_id, lpFieldTempl->field_slot) ;
+        }
 	    else if (fast_val.field_type == lpFieldTempl->field_type)
 	    {
 		    /// 2014-02-18 tangmc 增加市场判断
@@ -1276,9 +1267,9 @@ size_t Fast_Decoder_Impl::DecodeNormalField (const char* lpData, const FastMsg_T
 			    //2014-02-18 tangmc 修改
 		    }
 	    }
-	    else if (fast_val.field_type == FFT_Null_Type && emFAST_SZLEVEL2 ==m_makettype)//2014-02-18 tangmc 增加判断条件
+	    else if (fast_val.field_type == FFT_Null_Type && emFAST_SZLEVEL2 == m_makettype) //2014-02-18 tangmc 增加判断条件
 	    {
-		    if (lpFieldTempl->field_op == OP_Copy  &&  lpFieldTempl->IsAssignedCurrentValue())
+		    if (lpFieldTempl->field_op == OP_Copy && lpFieldTempl->IsAssignedCurrentValue())
 		    {
 			    lpFieldTempl->ResetCurrentValue();
 		    }
@@ -1326,64 +1317,65 @@ size_t Fast_Decoder_Impl::DecodeNormalField (const char* lpData, const FastMsg_T
                 break ;
             }
             case OP_Increment:
-    {
-      if (FFT_Int32 == lpFieldTempl->field_curval.field_type
-       || lpFieldTempl->field_curval.field_type == FFT_UInt32)
-       ++lpFieldTempl->field_curval.val.l4 ;
-      else if (FFT_Int64 == lpFieldTempl->field_curval.field_type
-       || lpFieldTempl->field_curval.field_type == FFT_UInt64)
-       ++lpFieldTempl->field_curval.val.l8 ;
-      else
-      {
-        fast_val.field_type = FFT_Null_Type ;
-        break ;
-      }
-      memcpy(&fast_val, &lpFieldTempl->field_curval, sizeof(Fast_Value)) ;
-      break ;
+            {
+                if (FFT_Int32 == lpFieldTempl->field_curval.field_type || lpFieldTempl->field_curval.field_type == FFT_UInt32)
+                    ++lpFieldTempl->field_curval.val.l4 ;
+                else if (FFT_Int64 == lpFieldTempl->field_curval.field_type || lpFieldTempl->field_curval.field_type == FFT_UInt64)
+                    ++lpFieldTempl->field_curval.val.l8 ;
+                else
+                {
+                    fast_val.field_type = FFT_Null_Type ;
+                    break ;
+                }
+                memcpy(&fast_val, &lpFieldTempl->field_curval, sizeof(Fast_Value)) ;
+                break ;
+            }
+            
+            case OP_Default:
+            {
+	            /// 2014-02-18 tangmc 增加市场判断
+	            if (emFAST_SHLEVEL2 == m_makettype)
+	            {
+		            fast_val.field_type = FFT_Null_Type ;
+		            //memcpy(&fast_val, &lpFieldTempl->field_opval, sizeof(Fast_Value)) ;
+	            }
+	            else if (emFAST_SZLEVEL2 == m_makettype)
+	            {
+		            // 2014-02-18 注释上面2句, 改成如下形式
+		            //fast_val.field_type = FFT_Null_Type ;
+		            if (lpFieldTempl->field_type == FFT_Int32  ||  lpFieldTempl->field_type == FFT_UInt32)
+		            {
+			            fast_val.val.l4 = lpFieldTempl->field_opval.val.l4;
+		            }
+		            else
+		            {
+			            memcpy(&fast_val, &lpFieldTempl->field_opval, sizeof(Fast_Value)) ;
+		            }
+	            }
+                
+                break ;
+            }
+            default:
+                fast_val.field_type = FFT_Null_Type ;
+                break ;
+        }
     }
-    case OP_Default:
-    {
-	  ///2014-02-18 tangmc 增加市场判断
-	  if (emFAST_SHLEVEL2 ==m_makettype)
-	  {
-		  fast_val.field_type = FFT_Null_Type ;
-		  //memcpy(&fast_val, &lpFieldTempl->field_opval, sizeof(Fast_Value)) ;
-	  }
-	  else if (emFAST_SZLEVEL2 ==m_makettype)
-	  {
-		  // 2014-02-18 注释上面2句, 改成如下形式
-		  //fast_val.field_type = FFT_Null_Type ;
-		  if (lpFieldTempl->field_type == FFT_Int32  ||  lpFieldTempl->field_type == FFT_UInt32)
-		  {
-			  fast_val.val.l4 = lpFieldTempl->field_opval.val.l4;
-		  }
-		  else
-		  {
-			  memcpy(&fast_val, &lpFieldTempl->field_opval, sizeof(Fast_Value)) ;
-		  }
-	  }
-      break ;
-    }
-    default:
-      fast_val.field_type = FFT_Null_Type ;
-      break ;
-    }
-  }
-  return size ;
+
+    return size ;
 }
 
 size_t Fast_Decoder_Impl::DecodeFieldValue (const char* lpData, Fast_Value& fast_val, Fast_Presence pres)
 {
     size_t size = 0 ;
-    
+
     switch (fast_val.field_type)
     {
-        case FFT_Int32:
-        case FFT_UInt32:
+        case FFT_Int32  :
+        case FFT_UInt32 :
             size = DecodeInt32(lpData, pres, fast_val) ;
             break ;
-        case FFT_Int64:
-        case FFT_UInt64:
+        case FFT_Int64  :
+        case FFT_UInt64 :
             size = DecodeInt64(lpData, pres, fast_val) ;
             break ;
         case FFT_String:
@@ -1439,22 +1431,6 @@ std::string Fast_Decoder_Impl::get_step_field_value(const char *buf, int len, co
 
 std::string Fast_Decoder_Impl::UTF8_To_GBK(const std::string& utf8_str)
 {
-#ifdef _WIN32
-	int len = MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), -1, NULL, 0);
-	unsigned short * wszGBK = new unsigned short[len + 1];
-	memset(wszGBK, 0, len * 2 + 2);
-	MultiByteToWideChar(CP_UTF8, 0, (LPCTSTR)utf8_str.c_str(), -1, (LPWSTR)wszGBK, len);
-
-	len = WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)wszGBK, -1, NULL, 0, NULL, NULL);
-	char *szGBK = new char[len + 1];
-	memset(szGBK, 0, len + 1);
-	WideCharToMultiByte(CP_ACP,0, (LPCWSTR)wszGBK, -1, szGBK, len, NULL, NULL);
-	//strUTF8 = szGBK;
-	std::string strTemp(szGBK);
-	delete[]szGBK;
-	delete[]wszGBK;
-	return strTemp;
-#else
 	iconv_t  cd ;
 
 	cd = iconv_open("GBK", "UTF-8") ;
@@ -1492,5 +1468,4 @@ std::string Fast_Decoder_Impl::UTF8_To_GBK(const std::string& utf8_str)
 	delete [] gbk_buf  ;
 	iconv_close( cd ) ;
 	return gbk_ret ;
-#endif
 }

@@ -83,6 +83,7 @@ protected:
     //2013-02-18 tangmc 将上海深圳分开
     //解析一个sequence
     size_t DecodeSequenceSH (FastGroup *lpGroup, const char *lpFastData, size_t nDataLen, FastMsg_Templ *lpMsgTempl) ;
+    
     //解析一个sequence到 IGroup
     size_t DecodeSequenceSZ (FastGroup *lpGroup, const char *lpFastData, size_t nDataLen, Fast_TemplField *lpField/*FastMsg_Templ *lpMsgTempl*/) ;
     //2013-02-18 tangmc 将上海深圳分开
@@ -92,8 +93,10 @@ protected:
 
     //解析PMAP
     size_t DecodePMAP (const char* lpData, size_t nDataLen, PMAP pmap) ;
+    
     //解析FAST消息类型
     size_t DecodeFastType (const char* lpData, uint32& nMsgType) ;
+    
     //解析FAST字节获得一个字段	
     size_t DecodeBytes (const char* lpData, char* lpBuf, size_t nDataLen) ;
     
