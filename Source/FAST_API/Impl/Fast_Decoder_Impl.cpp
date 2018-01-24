@@ -487,7 +487,7 @@ IFast_Message * FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData,
     }
 
     // ½âÎöFast-Data
-    int nMsgType = atoi (strMsgType + 2) ;
+    int nMsgType = atoi(strMsgType + 2) ;
     FastMsg_Templ* lpFastTempl = this->m_FastTempls.GetTemplate(nMsgType) ;
     if (!lpFastTempl)
     {
@@ -504,7 +504,7 @@ IFast_Message * FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData,
         return 0 ;
     }
 
-    return lpFastMsg ;
+    return lpFastMsg;
 }
 
 IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::DecodeFastData (const char* lpFastData, int nFastDataLen,int nMsgType)
@@ -531,8 +531,7 @@ IFast_Message* FUNCTION_CALL_MODE Fast_Decoder_Impl::DecodeFastData (const char*
     return lpFastMsg ;
 }
 
-IFast_Message* FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::DecodeFastData (const char* lpFastData, int nFastDataLen)
+IFast_Message * FUNCTION_CALL_MODE Fast_Decoder_Impl::DecodeFastData (const char* lpFastData, int nFastDataLen)
 {
 	Fast_Message_Impl* lpFastMsg = new Fast_Message_Impl ;
 	lpFastMsg->m_nSeqNum     = 0 ;
@@ -540,57 +539,62 @@ Fast_Decoder_Impl::DecodeFastData (const char* lpFastData, int nFastDataLen)
 	// ½âÎöFast-Data	
 	if (-1 == this->DecodeFastForNotMsgType (lpFastData, nFastDataLen, lpFastMsg))
 	{
-		lpFastMsg->Release () ;
-		return 0 ;
+		lpFastMsg->Release() ;
+
+        return 0 ;
 	}
-	return lpFastMsg ;
+	
+    return lpFastMsg ;
 }
 
-const FastField_Info* FUNCTION_CALL_MODE 
-Fast_Decoder_Impl::GetFieldInfo (int nTagID)
+const FastField_Info * FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFieldInfo (int nTagID)
 {
-  static FastField_Info s_FieldInfo ;
-  if (m_mapFieldInfo.find (nTagID) != m_mapFieldInfo.end ())
-   {
-     Fast_TemplField* lpField = m_mapFieldInfo [nTagID]  ;
-     switch (lpField->field_type)
-     {
-     case FFT_Int8:
-       s_FieldInfo.emType = emInt8 ;
-       break ;
-     case FFT_UInt8:
-       s_FieldInfo.emType = emUInt8 ;
-       break ;
-     case FFT_Int16:
-       s_FieldInfo.emType = emInt16 ;
-       break ;
-     case FFT_UInt16:
-       s_FieldInfo.emType = emUInt16 ;
-       break ;
-     case FFT_Int32:
-       s_FieldInfo.emType = emInt32 ;
-       break ;
-     case FFT_UInt32:
-       s_FieldInfo.emType = emUInt32 ;
-       break ;
-     case FFT_Int64:
-       s_FieldInfo.emType = emInt64 ;
-       break ;
-     case FFT_String:
-       s_FieldInfo.emType = emString ;
-       break ;
-     case FFT_Sequence:
-     case FFT_Length:
-       s_FieldInfo.emType = emSequence ;
-       break ;
-     default:
-       return 0 ;
-     } ;
-     s_FieldInfo.nDecimalPlaces = lpField->decimal_place ;
-     strcpy (s_FieldInfo.strDesc, lpField->field_name) ;
-     return &s_FieldInfo ;
-   }
-  return 0 ;
+    static FastField_Info s_FieldInfo ;
+    
+    if (m_mapFieldInfo.find (nTagID) != m_mapFieldInfo.end ())
+    {
+        Fast_TemplField* lpField = m_mapFieldInfo [nTagID]  ;
+        switch (lpField->field_type)
+        {
+            case FFT_Int8 :
+                s_FieldInfo.emType = emInt8 ;
+                break ;
+            case FFT_UInt8:
+                s_FieldInfo.emType = emUInt8 ;
+                break ;
+            case FFT_Int16:
+                s_FieldInfo.emType = emInt16 ;
+                break ;
+            case FFT_UInt16:
+                s_FieldInfo.emType = emUInt16 ;
+                break ;
+            case FFT_Int32:
+                s_FieldInfo.emType = emInt32 ;
+                break ;
+            case FFT_UInt32:
+                s_FieldInfo.emType = emUInt32 ;
+                break ;
+            case FFT_Int64:
+                s_FieldInfo.emType = emInt64 ;
+                break ;
+            case FFT_String:
+                s_FieldInfo.emType = emString ;
+                break ;
+            case FFT_Sequence:
+            case FFT_Length:
+                s_FieldInfo.emType = emSequence ;
+                break ;
+            default:
+                return 0 ;
+        };
+        
+        s_FieldInfo.nDecimalPlaces = lpField->decimal_place ;
+        strcpy (s_FieldInfo.strDesc, lpField->field_name) ;
+        
+        return &s_FieldInfo ;
+    }
+    
+    return 0 ;
 }
 
 const char* FUNCTION_CALL_MODE Fast_Decoder_Impl::GetLastError ()
