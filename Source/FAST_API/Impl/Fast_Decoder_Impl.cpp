@@ -284,20 +284,19 @@ Fast_TemplField * Fast_Decoder_Impl::LoadFieldTempl (TiXmlElement * pXmlElement)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-int FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int nLen)
+int FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFastMsgLen(const char* lpData, int nLen)
 {
     this->m_bHasError = false ;
     if (nLen < MIN_STEP_LEN)
         return 0 ;
 
-    if (strncmp (lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
+    if (strncmp(lpData, STEP_HEADER_FLAG, STEP_HEADER_SIZE) != 0)
     {
         this->m_bHasError = true ;
-        char temp [STEP_HEADER_SIZE + 1] ;
+        char temp[STEP_HEADER_SIZE + 1] ;
         memcpy (temp, lpData, STEP_HEADER_SIZE) ;
-        temp [STEP_HEADER_SIZE] = 0x00 ;
-        ::snprintf (this->m_strError, sizeof (this->m_strError)-1,
-                  "Illegal Fast Data[%s].", temp) ;
+        temp[STEP_HEADER_SIZE] = 0x00 ;
+        ::snprintf (this->m_strError, sizeof(this->m_strError) - 1, "Illegal Fast Data[%s].", temp) ;
         return -1 ;
     }
     const char* lpStepLen = strstr (lpData, STEP_LEN_FLAG) ;
@@ -305,7 +304,7 @@ int FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int
         return 0 ;
     lpStepLen += STEP_LEN_SIZE ;
 
-    char tmp_buf[20] ;
+    char tmp_buf[20];
     int  nPos = 0 ;
     while ((*lpStepLen) != STEP_FIELD_DELIM)
     {
@@ -320,11 +319,11 @@ int FUNCTION_CALL_MODE Fast_Decoder_Impl::GetFastMsgLen (const char* lpData, int
     if (nPos < 20)
     {
         ++lpStepLen ;
-        tmp_buf[nPos] = '\0' ;
+        tmp_buf[nPos] = '\0';
         return static_cast<int>(atoi(tmp_buf)+(lpStepLen - lpData) + FAST_TAIL_LENGTH);
     }
     else
-        return 0 ;
+        return 0;
 }
 
 IFast_Message * FUNCTION_CALL_MODE Fast_Decoder_Impl::Decode(const char* lpData, int nLen)
@@ -672,12 +671,12 @@ int Fast_Decoder_Impl::DecodeFastRecord(const char* lpFastData, int nDataLen, Fa
 				nTagID = lpFieldTempl->field_id;
 			}
 			
-            if( 0 == nTagID )
+            if (0 == nTagID)
 			{
 				return -1;
 			}
 
-            FastGroup* lpGroup = lpRecord->SetGroup (nTagID) ;
+            FastGroup * lpGroup = lpRecord->SetGroup (nTagID) ;
 		  
 		    ///2014-02-18 tangmc 增加市场判断
 		    if (emFAST_SHLEVEL2 ==m_makettype)
